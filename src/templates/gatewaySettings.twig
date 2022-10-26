@@ -1,0 +1,33 @@
+{% from "_includes/forms" import autosuggestField %}
+
+{{ autosuggestField({
+  label: 'Public API Key'|t('commerce-affirm'),
+  id: 'publicKey',
+  class: 'ltr',
+  name: 'publicKey',
+  suggestEnvVars: true,
+  value: gateway.getPublicKey(false),
+  errors: gateway.getErrors('publicKey'),
+  required: true,
+}) }}
+
+{{ autosuggestField({
+  label: 'Private API Key'|t('commerce-affirm'),
+  id: 'privateKey',
+  class: 'ltr',
+  name: 'privateKey',
+  suggestEnvVars: true,
+  value: gateway.getPrivateKey(false),
+  errors: gateway.getErrors('privateKey'),
+  required: true,
+}) }}
+
+{{ autosuggestField({
+  label: 'Product Key'|t('commerce-affirm'),
+  id: 'productKey',
+  class: 'ltr',
+  name: 'productKey',
+  suggestEnvVars: true,
+  value: gateway.getProductKey(false),
+  errors: gateway.getErrors('productKey')
+}) }}

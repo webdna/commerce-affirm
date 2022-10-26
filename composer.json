@@ -1,0 +1,42 @@
+{
+	"name": "webdna/commerce-affirm",
+	"description": "Affirm integration for Craft Commerce 4+",
+	"type": "craft-plugin",
+	"keywords": [
+		"craft",
+		"cms",
+		"craftcms",
+		"craft-plugin",
+		"commerce",
+		"affirm"
+	],
+	"support": {
+		"email": "info@webdna.co.uk",
+		"source": "https://github.com/webdna/commerce-affirm",
+		"docs": "https://github.com/webdna/commerce-affirm",
+		"issues": "https://github.com/webdna/commerce-affirm/issues?state=open"
+	},
+	"license": "proprietary",
+	"authors": [
+		{
+			"name": "webdna",
+			"homepage": "https://webdna.co.uk"
+		}
+	],
+	"require": {
+		"craftcms/cms": "^4.0",
+		"craftcms/commerce": "^4.0",
+		"craftcms/commerce-omnipay": "^4.0.0",
+		"eduardlleshi/omnipay-affirm": "^3.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"webdna\\commerce\\affirm\\": "src/"
+		}
+	},
+	"extra": {
+		"name": "Affirm for Craft Commerce",
+		"handle": "commerce-affirm",
+		"class": "webdna\\commerce\\affirm\\Affirm"
+	}
+}

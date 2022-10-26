@@ -1,0 +1,133 @@
+{% if cart is not defined %}
+  {% set cart = craft.commerce.carts.cart %}
+{% endif %}
+
+<div class="affirm-form">
+	
+	<input type="hidden" name="token" value="" /> 
+	
+	<div data-id="affirm-msg">
+		The process should happen automatically, if if doesn't please <a href="#" data-id="affirm-proceed">click here</a>
+	</div>
+	<div data-id="affirm-processing" style="display:none;">Processing...</div>
+	<div data-id="affirm-error" style="display:none;"></div>
+
+</div>
+<script>
+ var _affirm_config = {
+   public_api_key:  '{{ gateway.publicKey }}',
+   script:          "https://cdn1-sandbox.affirm.com/js/v2/affirm.js",
+ };
+ 
+(function(m,g,n,d,a,e,h,c){var b=m[n]||{},k=document.createElement(e),p=document.getElementsByTagName(e)[0],l=function(a,b,c){return function(){a[b]._.push([c,arguments])}};b[d]=l(b,d,"set");var f=b[d];b[a]={};b[a]._=[];f._=[];b._=[];b[a][h]=l(b,a,h);b[c]=function(){b._.push([h,arguments])};a=0;for(c="set add save post open empty reset on off trigger ready setProduct".split(" ");a<c.length;a++)f[c[a]]=l(b,d,c[a]);a=0;for(c=["get","token","url","items"];a<c.length;a++)f[c[a]]=function(){};k.async=
+!0;k.src=g[e];p.parentNode.insertBefore(k,p);delete g[e];f(g);m[n]=b})(window,_affirm_config,"affirm","checkout","ui","script","ready","jsReady");
+
+affirm.checkout({
+  merchant: {
+	user_cancel_url: "{{ cancelUrl }}",
+	user_confirmation_url: "{{ confirmationUrl }}",
+	user_confirmation_url_action: "GET",
+	merchant: "{{ siteName }}"
+  },
+
+  shipping: {
+	name: {
+	  first: "{{ cart.shippingAddress.firstName }}",
+	  last: "{{ cart.shippingAddress.lastName }}"
+	},
+	address: {
+	  line1: "{{ cart.shippingAddress.addressLine1 }}",
+	  line2: "{{ cart.shippingAddress.addressLine2 }}",
+	  city: "{{ cart.shippingAddress.locality }}",
+	  state: "{{ cart.shippingAddress.administrativeArea }}",
+	  country: "{{ cart.shippingAddress.countryCode }}",
+	  zipcode: "{{ cart.shippingAddress.postalCode }}"
+	},
+	{% if (cart.shippingAddress.phone ?? null) %}phone_number: "{{ cart.shippingAddress.phone }}",{% endif %}
+	email: "{{ cart.email }}",
+  },
+  billing: {
+	name: {
+	  first: "{{ cart.billingAddress.firstName }}",
+	  last: "{{ cart.billingAddress.lastName }}"
+	},
+	address: {
+	  line1: "{{ cart.billingAddress.addressLine1 }}",
+	  line2: "{{ cart.billingAddress.addressLine2 }}",
+	  city: "{{ cart.billingAddress.locality }}",
+	  state: "{{ cart.billingAddress.administrativeArea }}",
+	  country: "{{ cart.billingAddress.countryCode }}",
+	  zipcode: "{{ cart.billingAddress.postalCode }}"
+	},
+	{% if (cart.billingAddress.phone ?? null) %}phone_number: "{{ cart.billingAddress.phone }}",{% endif %}
+	email: "{{ cart.email }}",
+  },
+  metadata: {
+	mode: "{{ mode ?? 'modal' }}"
+  },
+  items: [
+	{% for lineItem in cart.lineItems%}
+	{
+	  sku: "{{ lineItem.sku }}",
+	  display_name: "{{ lineItem.description }}",
+	  unit_price: {{ lineItem.purchasable.salePrice * 100 }},
+	  qty: {{ lineItem.qty }}
+	}
+	{% endfor %}
+  ],
+  order_id: "{{ cart.number }}",
+  currency: "USD",
+  total: {{ cart.total * 100 }}
+});
+
+var affirmProceed = function() {
+	affirm.checkout.open({
+		onFail: function(e){
+			console.log(e)
+			{% if onFail ?? null %}
+				{{ onFail }}(e);
+			{% else %}
+				document.querySelector('[data-id="affirm-error"]').innerHTML = e.reason;
+				document.querySelector('[data-id="affirm-error"]').style.display = 'block';
+				document.querySelector('[data-id="affirm-processing"]').style.display = 'none';
+			{% endif %}
+		},
+		onSuccess: function(e){
+			console.log(e)
+			{% if onSuccess ?? null %}
+				{{ onSuccess }}(e);
+			{% else %}
+				var $token = document.querySelector('input[name="token"]');
+				$token.value = e.checkout_token;
+				$token.closest('form').submit();
+			{% endif %}
+		},
+		onOpen: function(e){
+			console.log(e)
+			{% if onOpen ?? null %}
+				{{ onOpen }}(e);
+			{% else %}
+				document.querySelector('[data-id="affirm-processing"]').style.display = 'block';
+			{% endif %}
+		},
+		onValidationError: function(e){
+			console.log(e)
+			{% if onValidationError ?? null %}
+				{{ onValidationError }}(e);
+			{% else %}
+				document.querySelector('[data-id="affirm-error"]').innerHTML = e.reason;
+				document.querySelector('[data-id="affirm-error"]').style.display = 'block';
+				document.querySelector('[data-id="affirm-processing"]').style.display = 'none';
+			{% endif %}
+		}
+	});
+}
+{% if not craft.app.session.hasFlash('error') and (paymentForm.getErrors() ?? [])|length == 0 %}
+affirmProceed();
+{% endif %}
+document.querySelector('[data-id="affirm-proceed"]').addEventListener('click', function(e){
+	e.preventDefault();
+	affirmProceed();
+})
+
+</script>
