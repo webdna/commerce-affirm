@@ -58,6 +58,8 @@ class Gateway extends BaseGateway
 	
 	private ?string $_productKey = null;
 	
+	private bool|string $_testMode = false;
+	
 	
 	
 	public static function displayName(): string
@@ -77,6 +79,7 @@ class Gateway extends BaseGateway
 		$settings['publicKey'] = $this->getPublicKey(false);
 		$settings['privateKey'] = $this->getPrivateKey(false);
 		$settings['productKey'] = $this->getProductKey(false);
+		$settings['testMode'] = $this->getTestMode(false);
 	
 		return $settings;
 	}
@@ -111,6 +114,16 @@ class Gateway extends BaseGateway
 		$this->_productKey = $productKey;
 	}
 	
+	public function getTestMode(bool $parse = true): bool|string
+	{
+		return $parse ? App::parseBooleanEnv($this->_testMode) : $this->_testMode;
+	}
+	
+	public function setTestMode(bool|string $testMode): void
+	{
+		$this->_testMode = $testMode;
+	}
+	
 	
 	public function populateRequest(array &$request, BasePaymentForm $paymentForm = null): void
 	{
@@ -121,6 +134,7 @@ class Gateway extends BaseGateway
 			}
 		}
 	}
+	
 	
 	public function createPaymentRequest(Transaction $transaction, ?CreditCard $card = null, ?ItemBag $itemBag = null): array
 	{
@@ -136,6 +150,11 @@ class Gateway extends BaseGateway
 		return true;
 	}
 	
+	public function supportsRefund(): bool
+	{
+		return false;
+	}
+	
 	
 	
 	public function getPaymentTypeOptions(): array
@@ -145,6 +164,41 @@ class Gateway extends BaseGateway
 		];
 	}
 	
+	
+	// public function prepareCompleteAuthorizeRequest(mixed $request): RequestInterface
+	// {
+	// 	
+	// }
+	// 
+	// public function completeAuthorize(Transaction $transaction): RequestResponseInterface
+	// {
+	// 	if (!$this->supportsCompleteAuthorize()) {
+	// 		throw new NotSupportedException(Craft::t('commerce', 'Completing authorization is not supported by this gateway'));
+	// 	}
+	// 
+	// 	$request = $this->createRequest($transaction);
+	// 	$completeRequest = $this->prepareCompleteAuthorizeRequest($request);
+	// 
+	// 	return $this->performRequest($completeRequest, $transaction);
+	// }
+	// 
+	// public function completePurchase(Transaction $transaction): RequestResponseInterface
+	// {
+	// 	if (!$this->supportsCompletePurchase()) {
+	// 		throw new NotSupportedException(Craft::t('commerce', 'Completing purchase is not supported by this gateway'));
+	// 	}
+	// 
+	// 	$request = $this->createRequest($transaction);
+	// 	$completeRequest = $this->prepareCompletePurchaseRequest($request);
+	// 
+	// 	return $this->performRequest($completeRequest, $transaction);
+	// }
+	
+	public function prepareResponse(ResponseInterface $response, Transaction $transaction): RequestResponseInterface
+	{
+		/** @var AbstractResponse $response */
+		return new RequestResponse($response, $transaction);
+	}
 	
 	
 	
@@ -207,7 +261,8 @@ class Gateway extends BaseGateway
 		$gateway->setPublicKey($this->getPublicKey());
 		$gateway->setPrivateKey($this->getPrivateKey());
 		$gateway->setProductKey($this->getProductKey());
-	
+		$gateway->setTestMode($this->getTestMode());
+		
 		return $gateway;
 	}
 	

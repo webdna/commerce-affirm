@@ -1,4 +1,4 @@
-{% from "_includes/forms" import autosuggestField %}
+{% from "_includes/forms" import autosuggestField, booleanMenuField %}
 
 {{ autosuggestField({
   label: 'Public API Key'|t('commerce-affirm'),
@@ -30,4 +30,12 @@
   suggestEnvVars: true,
   value: gateway.getProductKey(false),
   errors: gateway.getErrors('productKey')
+}) }}
+
+{{ booleanMenuField({
+     label: "Test mode?"|t('commerce'),
+     name: 'testMode',
+     value: gateway.getTestMode(false),
+     includeEnvVars: true,
+     errors: gateway.getErrors('testMode'),
 }) }}

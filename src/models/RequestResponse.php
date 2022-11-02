@@ -10,47 +10,75 @@ namespace webdna\commerce\affirm\models;
 
 use Craft;
 use craft\commerce\omnipay\base\RequestResponse as BaseRequestResponse;
-use Omnipay\Affirm\Message\Response\CompletePurchaseResponse;
 
 class RequestResponse extends BaseRequestResponse
 {
-	public function getMessage(): string
+	
+	/**
+	 * Check if the transaction was successful.
+	 *
+	 * @return bool
+	 */
+	public function isSuccessful(): bool
 	{
-		$data = $this->response->getData();
-
-		if (is_array($data) && !empty($data['status'])) {
-			switch ($data['status']) {
-				case 'canceled':
-					return Craft::t('commerce-affirm', 'The payment was canceled.');
-				case 'failed':
-					return Craft::t('commerce-affirm', 'The payment failed.');
-				case 'expired':
-					return Craft::t('commerce-affirm', 'The payment expired.');
-			}
+		$data = $this->getData();
+		
+		if (isset($data['status'])) {
+			return in_array($data['status'], ['authorized', 'captured']);
 		}
-
-		return (string)$this->response->getMessage();
-	}
-
-	public function isProcessing(): bool
-	{
-		$data = $this->response->getData();
-		// @TODO Temporary solution ahead of either a PR to `omnipay-mollie` or a gateway rewrite
-		if ($this->response instanceof CompletePurchaseResponse && isset($data['method'], $data['status']) && $data['method'] === 'banktransfer' && $this->response->isOpen()) {
+		
+		if (isset($data['type']) && $data['type'] == 'capture') {
 			return true;
 		}
-
-		return parent::isProcessing();
+		
+		return false;
 	}
-
+	
+	
+	public function isProcessing(): bool
+	{
+		return $this->getData()['status'] == '';
+	}
+	
+	/**
+	 * Check if the transaction needs to redirect to another page
+	 *
+	 * @return bool
+	 */
 	public function isRedirect(): bool
 	{
-		$data = $this->response->getData();
-		// @TODO Temporary solution ahead of either a PR to `omnipay-mollie` or a gateway rewrite
-		if ($this->response instanceof CompletePurchaseResponse && isset($data['method']) && $data['method'] === 'banktransfer' && $this->isProcessing()) {
-			return false;
-		}
-
-		return parent::isRedirect();
+		return $this->getRedirectUrl() !== NULL;
+	}
+	
+	
+	/**
+	 * Get charge_id param from the response
+	 *
+	 * @return mixed
+	 */
+	public function getTransactionReference(): string
+	{
+		return $this->getData()['id'];
+	}
+	
+	/**
+	 * Get amount param from the response
+	 *
+	 * @return mixed
+	 */
+	public function getAmount(): float
+	{
+		return $this->getData()['amount'];
+	}
+	
+	
+	/**
+	 * Get message param from the response
+	 *
+	 * @return mixed
+	 */
+	public function getMessage(): string
+	{
+		return '';
 	}
 }

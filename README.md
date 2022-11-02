@@ -25,7 +25,7 @@ Open your terminal and run the following commands:
 cd /path/to/my-project
 
 # tell Composer to load the plugin
-composer require craftcms/commerce-affirm
+composer require webdna/commerce-affirm
 
 # tell Craft to install the plugin
 ./craft install/plugin commerce-affirm
