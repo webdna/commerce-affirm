@@ -72,11 +72,11 @@ affirm.checkout({
 	  display_name: "{{ lineItem.description }}",
 	  unit_price: {{ lineItem.purchasable.salePrice * 100 }},
 	  qty: {{ lineItem.qty }}
-	}
+	}{{ not loop.last ? ',' }}
 	{% endfor %}
   ],
   order_id: "{{ cart.number }}",
-  currency: "USD",
+  currency: "{{ cart.paymentCurrency }}",
   total: {{ cart.total * 100 }}
 });
 
