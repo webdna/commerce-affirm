@@ -1,5 +1,11 @@
 # Release Notes
 
+## 1.0.0-beta.3
+### Added
+- Option to automatically launch the modal or via button
+- Affirm branded button
+- Option to show status or not
+
 ## 1.0.0-beta.2
 ### Fixed
 - js error

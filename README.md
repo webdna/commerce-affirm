@@ -55,11 +55,15 @@ On the payment page, use the getPaymentFormHtml method passing in a few paramete
 
 ### Parameters
 
+`automatic` : automatically launches the payment modal otherwise show a button to launch it. (default: 'true')
+
 `cancelUrl` : the url to return to if the process is cancelled. (only used in 'redirect' mode)
 
 `confirmationUrl` : the url to return to on a successful application. (only used in 'redirect' mode)
 
 `mode` : 'modal' or 'redirect' (default: 'modal')
+
+`showStatus` : show the status updates, processing etc. (default: false)
 
 #### Modal callbacks:
 
