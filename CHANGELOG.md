@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.0.0-beta.4
+### Added
+- Option to use your own button
+
 ## 1.0.0-beta.3
 ### Added
 - Option to automatically launch the modal or via button

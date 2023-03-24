@@ -11,6 +11,7 @@
 		The process should happen automatically, if if doesn't please <a href="#" data-id="affirm-proceed">click here</a>
 	</div>
 	{% else %}
+	{% if button ?? true %}
 	<div data-id="affirm-proceed" class="{{ buttonClass ?? '' }}">
 		<svg width="244" height="60" viewBox="0 0 244 60" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<g clip-path="url(#clip0)">
@@ -35,6 +36,7 @@
 		</defs>
 		</svg>
 	</div>
+	{% endif %}
 	{% endif %}
 	
 	{% if showStatus ?? false %}
