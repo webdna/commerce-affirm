@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.0.0 - 2023-05-09
+### Changed
+- Released!
+
 ## 1.0.0-beta.4
 ### Added
 - Option to use your own button
