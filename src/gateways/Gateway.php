@@ -11,10 +11,12 @@ namespace webdna\commerce\affirm\gateways;
 use webdna\commerce\affirm\Affirm;
 use webdna\commerce\affirm\models\forms\AffirmOffsitePaymentForm;
 use webdna\commerce\affirm\models\RequestResponse;
+use webdna\commerce\affirm\responses\PaymentResponse;
 
 use Craft;
 use craft\commerce\Plugin as Commerce;
 // use craft\commerce\base\Gateway as BaseGateway;
+use craft\commerce\errors\PaymentException;
 use craft\commerce\base\RequestResponseInterface;
 use craft\commerce\errors\CurrencyException;
 use craft\commerce\errors\OrderStatusException;
@@ -40,6 +42,7 @@ use Omnipay\Common\Issuer;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\ResponseInterface;
 use Omnipay\Common\PaymentMethod;
+use Omnipay\Omnipay;
 use Omnipay\Affirm\Gateway as OmnipayGateway;
 use Omnipay\Affirm\Message\Request\FetchTransactionRequest;
 use Omnipay\Affirm\Message\Response\FetchPaymentMethodsResponse;
@@ -76,9 +79,9 @@ class Gateway extends BaseGateway
 	public function getSettings(): array
 	{
 		$settings = parent::getSettings();
-		$settings['publicKey'] = $this->getPublicKey(false);
-		$settings['privateKey'] = $this->getPrivateKey(false);
-		$settings['productKey'] = $this->getProductKey(false);
+		$settings['publicKey'] = $this->getPublicKey(true);
+		$settings['privateKey'] = $this->getPrivateKey(true);
+		$settings['productKey'] = $this->getProductKey(true);
 		$settings['testMode'] = $this->getTestMode(false);
 	
 		return $settings;
@@ -147,60 +150,35 @@ class Gateway extends BaseGateway
 	
 	public function supportsCapture(): bool
 	{
-		return true;
+		return false;
 	}
 	
 	public function supportsRefund(): bool
 	{
 		return false;
 	}
-	
-	
-	
-	public function getPaymentTypeOptions(): array
+
+	public function supportsCompletePurchase(): bool
 	{
-		return [
-			'authorize' => Craft::t('commerce', 'Authorize & Capture'),
-		];
+		return false;
 	}
-	
-	
-	// public function prepareCompleteAuthorizeRequest(mixed $request): RequestInterface
-	// {
-	// 	
-	// }
-	// 
-	// public function completeAuthorize(Transaction $transaction): RequestResponseInterface
-	// {
-	// 	if (!$this->supportsCompleteAuthorize()) {
-	// 		throw new NotSupportedException(Craft::t('commerce', 'Completing authorization is not supported by this gateway'));
-	// 	}
-	// 
-	// 	$request = $this->createRequest($transaction);
-	// 	$completeRequest = $this->prepareCompleteAuthorizeRequest($request);
-	// 
-	// 	return $this->performRequest($completeRequest, $transaction);
-	// }
-	// 
-	// public function completePurchase(Transaction $transaction): RequestResponseInterface
-	// {
-	// 	if (!$this->supportsCompletePurchase()) {
-	// 		throw new NotSupportedException(Craft::t('commerce', 'Completing purchase is not supported by this gateway'));
-	// 	}
-	// 
-	// 	$request = $this->createRequest($transaction);
-	// 	$completeRequest = $this->prepareCompletePurchaseRequest($request);
-	// 
-	// 	return $this->performRequest($completeRequest, $transaction);
-	// }
-	
-	public function prepareResponse(ResponseInterface $response, Transaction $transaction): RequestResponseInterface
+
+	public function supportsPurchase(): bool
 	{
-		/** @var AbstractResponse $response */
-		return new RequestResponse($response, $transaction);
+		return true;
 	}
-	
-	
+
+	public function supportsAuthorize(): bool
+	{
+		return false;
+	}
+
+	public function completePurchase(Transaction $transaction): RequestResponseInterface
+	{
+		if (!$this->supportsCompletePurchase()) {
+	 		throw new NotSupportedException(Craft::t('commerce', 'Completing purchase is not supported by this gateway'));
+		}
+	}
 	
 	public function getSettingsHtml(): ?string
 	{
@@ -240,6 +218,25 @@ class Gateway extends BaseGateway
 	
 		return $html;
 	}
+
+	public function purchase(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
+	{
+		try {
+			$gateway = $this->createGateway();
+			$response = $gateway->authorize([
+				'transaction_id' => $form->token,
+			])->send();
+
+			return new PaymentResponse($response);
+
+		} catch (\Exception $exception) {
+			$message = $exception->getMessage();
+			if ($message) {
+				throw new PaymentException($message);
+			}
+			throw new PaymentException('The payment could not be processed (' . get_class($exception) . ')');
+		}
+	}
 	
 	public function rules(): array
 	{
@@ -248,15 +245,10 @@ class Gateway extends BaseGateway
 		return $rules;
 	}
 	
-	public function getTransactionHashFromWebhook(): ?string
-	{
-		return Craft::$app->getRequest()->getParam('commerceTransactionHash');
-	}
-	
 	protected function createGateway(): AbstractGateway
 	{
 		/** @var OmnipayGateway $gateway */
-		$gateway = static::createOmnipayGateway($this->getGatewayClassName());
+		$gateway = Omnipay::create('Affirm');
 	
 		$gateway->setPublicKey($this->getPublicKey());
 		$gateway->setPrivateKey($this->getPrivateKey());
