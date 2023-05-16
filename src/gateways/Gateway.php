@@ -79,9 +79,9 @@ class Gateway extends BaseGateway
 	public function getSettings(): array
 	{
 		$settings = parent::getSettings();
-		$settings['publicKey'] = $this->getPublicKey(true);
-		$settings['privateKey'] = $this->getPrivateKey(true);
-		$settings['productKey'] = $this->getProductKey(true);
+		$settings['publicKey'] = $this->getPublicKey(false);
+		$settings['privateKey'] = $this->getPrivateKey(false);
+		$settings['productKey'] = $this->getProductKey(false);
 		$settings['testMode'] = $this->getTestMode(false);
 	
 		return $settings;

@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.0.1 - 2023-05-16
+### Added
+- Purchase Method and Purchase Response
+
 ## 1.0.0 - 2023-05-09
 ### Changed
 - Released!
