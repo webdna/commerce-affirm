@@ -240,7 +240,6 @@ class Gateway extends BaseGateway
 
 		} catch (\Exception $exception) {
 			$message = $exception->getMessage();
-			Craft::dd($message);
 			if ($message) {
 				throw new PaymentException($message);
 			}
