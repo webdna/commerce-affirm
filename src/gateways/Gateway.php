@@ -227,10 +227,20 @@ class Gateway extends BaseGateway
 				'transaction_id' => $form->token,
 			])->send();
 
+			$authorizeResponse = new PaymentResponse($response);
+
+			if($authorizeResponse->isSuccessful()){
+				$responseCapture = $gateway->capture([
+					'transactionReference' => $authorizeResponse->getTransactionReference(),
+				])->send();
+
+				return new PaymentResponse($responseCapture);
+			}
 			return new PaymentResponse($response);
 
 		} catch (\Exception $exception) {
 			$message = $exception->getMessage();
+			Craft::dd($message);
 			if ($message) {
 				throw new PaymentException($message);
 			}
