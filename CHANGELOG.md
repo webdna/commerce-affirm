@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.0.3 - 2023-06-19
+### Fixed
+- Change to the PaymentResponse to return the transaction is as reference for the payment
+
 ## 1.0.2 - 2023-06-15
 ### Fixed
 - Capture after authorize
