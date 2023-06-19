@@ -70,6 +70,16 @@ class PaymentResponse implements RequestResponseInterface
      */
     public function getTransactionReference(): string
     {
+        $data = $this->getData();
+		
+		if (isset($data['status']) && in_array($data['status'], ['authorized', 'captured'])) {
+            return (string)$this->response->getTransactionReference();
+		}
+		
+		if (isset($data['type']) && $data['type'] == 'capture') {
+			return (string)$data['id'];
+		}
+
         return (string)$this->response->getTransactionReference();
     }
 
