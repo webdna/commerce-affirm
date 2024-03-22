@@ -150,7 +150,7 @@ class Gateway extends BaseGateway
 	
 	public function supportsCapture(): bool
 	{
-		return false;
+		return true;
 	}
 	
 	public function supportsRefund(): bool
@@ -170,13 +170,20 @@ class Gateway extends BaseGateway
 
 	public function supportsAuthorize(): bool
 	{
-		return false;
+		return true;
 	}
 
 	public function completePurchase(Transaction $transaction): RequestResponseInterface
 	{
 		if (!$this->supportsCompletePurchase()) {
-	 		throw new NotSupportedException(Craft::t('commerce', 'Completing purchase is not supported by this gateway'));
+			 throw new NotSupportedException(Craft::t('commerce', 'Completing purchase is not supported by this gateway'));
+		}
+	}
+	
+	public function completeAuthorize(Transaction $transaction): RequestResponseInterface
+	{
+		if (!$this->supportsCompleteAuthorize()) {
+			 throw new NotSupportedException(Craft::t('commerce', 'Completing Authorize is not supported by this gateway'));
 		}
 	}
 	
@@ -236,7 +243,7 @@ class Gateway extends BaseGateway
 
 				return new PaymentResponse($responseCapture);
 			}
-			return new PaymentResponse($response);
+			return $authorizeResponse;
 
 		} catch (\Exception $exception) {
 			$message = $exception->getMessage();
@@ -244,6 +251,50 @@ class Gateway extends BaseGateway
 				throw new PaymentException($message);
 			}
 			throw new PaymentException('The payment could not be processed (' . get_class($exception) . ')');
+		}
+	}
+	
+	public function Authorize(Transaction $transaction, BasePaymentForm $form): RequestResponseInterface
+	{
+		try {
+			$gateway = $this->createGateway();
+			$response = $gateway->authorize([
+				'transaction_id' => $form->token,
+			])->send();
+	
+			$authorizeResponse = new PaymentResponse($response);
+	
+			/*if($authorizeResponse->isSuccessful()){
+				$responseCapture = $gateway->capture([
+					'transactionReference' => $authorizeResponse->getTransactionReference(),
+				])->send();
+	
+				return new PaymentResponse($responseCapture);
+			}*/
+			return $authorizeResponse;
+	
+		} catch (\Exception $exception) {
+			$message = $exception->getMessage();
+			if ($message) {
+				throw new PaymentException($message);
+			}
+			throw new PaymentException('The payment could not be processed (' . get_class($exception) . ')');
+		}
+	}
+	
+	public function capture(Transaction $transaction,string $reference): RequestResponseInterface
+	{
+		try {
+			$gateway = $this->createGateway();
+			
+			$responseCapture = $gateway->capture([
+				'transactionReference' => $reference,
+			])->send();
+			
+			return new PaymentResponse($responseCapture);
+			
+		} catch (\Exception $exception) {
+			throw $exception;
 		}
 	}
 	
