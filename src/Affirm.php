@@ -70,7 +70,6 @@ class Affirm extends Plugin
 		Craft::getLogger()->dispatcher->targets[] = new MonologTarget([
 			'name' => 'affirm',
 			'categories' => ['affirm'],
-			'level' => Logger::LEVEL_INFO,
 			'logContext' => false,
 			'allowLineBreaks' => false,
 			'formatter' => new LineFormatter(

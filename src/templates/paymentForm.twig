@@ -75,7 +75,7 @@ affirm.checkout({
 	  country: "{{ cart.shippingAddress.countryCode }}",
 	  zipcode: "{{ cart.shippingAddress.postalCode }}"
 	},
-	{% if (cart.shippingAddress.phone ?? null) %}phone_number: "{{ cart.shippingAddress.phone }}",{% endif %}
+	phone_number: "{{ cart.shippingAddress['phone'] ?? cart.shippingAddress['phoneNumber'] ?? '' }}",
 	email: "{{ cart.email }}",
   },
   billing: {
@@ -91,7 +91,7 @@ affirm.checkout({
 	  country: "{{ cart.billingAddress.countryCode }}",
 	  zipcode: "{{ cart.billingAddress.postalCode }}"
 	},
-	{% if (cart.billingAddress.phone ?? null) %}phone_number: "{{ cart.billingAddress.phone }}",{% endif %}
+	phone_number: "{{ cart.billingAddress['phone'] ?? cart.billingAddress['phoneNumber'] ?? '' }}",
 	email: "{{ cart.email }}",
   },
   metadata: {

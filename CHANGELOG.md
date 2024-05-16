@@ -1,5 +1,9 @@
 # Release Notes
 
+## 1.0.5 - 2024-05-16
+### Added
+- Craft 5 Compatibility
+
 ## 1.0.4 - 2024-03-22
 ### Added
 - Support for Authorize and Capture
